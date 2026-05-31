@@ -15,8 +15,13 @@ class MemberService:
         return MemberRepository.get_by_id(db, member_id)
 
     @staticmethod
-    def create_member(db, member: Member):
-        return MemberRepository.create(db, member)
+    def create_member(db, member_data: dict):
+        member = Member(**member_data)
+
+        return MemberRepository.create(
+            db,
+            member
+        )
 
     @staticmethod
     def delete_member(db, member: Member):
