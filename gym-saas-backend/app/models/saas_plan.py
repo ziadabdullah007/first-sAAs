@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy import String, Numeric, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -22,6 +22,12 @@ class SaaSPlan(Base):
     description: Mapped[str | None] = mapped_column(
         Text
     )
+
+    gym_subscriptions = relationship(
+        "GymSubscription",
+        back_populates="saas_plan"
+    )
+
 
     price: Mapped[float] = mapped_column(
         Numeric(10, 2)

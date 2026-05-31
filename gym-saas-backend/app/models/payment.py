@@ -1,7 +1,7 @@
 import uuid
 
 from datetime import datetime
-
+from sqlalchemy.orm import relationship
 from sqlalchemy import Numeric, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -16,6 +16,17 @@ class Payment(Base):
         UUID(as_uuid=True),
         primary_key=True
     )
+
+    member = relationship(
+        "Member",
+        back_populates="payments"
+    )
+
+    subscription = relationship(
+        "Subscription",
+        back_populates="payments"
+    )
+
 
     subscription_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("subscriptions.id")

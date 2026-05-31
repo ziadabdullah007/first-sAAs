@@ -26,6 +26,28 @@ class Member(Base):
         primary_key=True
     )
 
+    subscriptions = relationship(
+        "Subscription",
+        back_populates="member"
+    )
+
+    payments = relationship(
+        "Payment",
+        back_populates="member"
+    )
+
+    attendance_records = relationship(
+        "Attendance",
+        back_populates="member"
+    )
+    
+
+    body_measurements = relationship(
+        "BodyMeasurement",
+        back_populates="member"
+    )
+
+
     gym_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("gyms.id")
     )

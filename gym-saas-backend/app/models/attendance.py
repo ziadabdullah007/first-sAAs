@@ -1,7 +1,7 @@
 import uuid
 
 from datetime import datetime
-
+from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -16,6 +16,17 @@ class Attendance(Base):
         UUID(as_uuid=True),
         primary_key=True
     )
+
+    member = relationship(
+        "Member",
+        back_populates="attendance_records"
+    )
+
+    gym = relationship(
+        "Gym"
+    )
+
+
 
     member_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("members.id")

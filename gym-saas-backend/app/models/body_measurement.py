@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-
+from sqlalchemy.orm import relationship
 
 class BodyMeasurement(Base):
     __tablename__ = "body_measurements"
@@ -15,6 +15,11 @@ class BodyMeasurement(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True
+    )
+
+    member = relationship(
+        "Member",
+        back_populates="body_measurements"
     )
 
     member_id: Mapped[uuid.UUID] = mapped_column(
