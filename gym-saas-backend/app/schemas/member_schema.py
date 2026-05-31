@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 
 
 class MemberCreate(BaseModel):
@@ -17,10 +17,19 @@ class MemberCreate(BaseModel):
 class MemberResponse(BaseModel):
     id: UUID
     gym_id: UUID
+
     first_name: str
     last_name: str
+
     email: Optional[str]
     phone: str
+
+    date_of_birth: Optional[date]
+    gender: Optional[str]
+
+    status: str
+
+    joined_at: datetime
 
     model_config = {
         "from_attributes": True
