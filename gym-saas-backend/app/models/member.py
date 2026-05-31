@@ -1,11 +1,21 @@
-from sqlalchemy import String, Date, ForeignKey
+import uuid
+from datetime import date, datetime
+
+from sqlalchemy import (
+    String,
+    Date,
+    DateTime,
+    ForeignKey,
+    Numeric
+)
 from sqlalchemy.dialects.postgresql import UUID
-from datetime import date
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship
+)
 
 from app.db.base import Base
-
-import uuid
 
 
 class Member(Base):
@@ -36,10 +46,44 @@ class Member(Base):
         String(50)
     )
 
-    date_of_birth: Mapped[date | None]= mapped_column(
-    Date
-)
+    date_of_birth: Mapped[date | None] = mapped_column(
+        Date
+    )
 
     gender: Mapped[str | None] = mapped_column(
         String(20)
+    )
+
+    height: Mapped[float | None] = mapped_column(
+        Numeric(5, 2)
+    )
+
+    weight: Mapped[float | None] = mapped_column(
+        Numeric(5, 2)
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(50)
+    )
+
+    joined_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    last_visit_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    # Relationships
+    gym = relationship(
+        "Gym",
+        back_populates="members"
     )
