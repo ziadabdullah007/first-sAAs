@@ -1,10 +1,11 @@
-from sqlalchemy import String, Text
+import uuid
+from datetime import datetime
+
+from sqlalchemy import String, Text, DateTime
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-
-import uuid
 
 
 class Gym(Base):
@@ -33,4 +34,22 @@ class Gym(Base):
 
     address: Mapped[str | None] = mapped_column(
         Text
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(50)
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True)
+    )
+
+    # Relationships
+    members = relationship(
+        "Member",
+        back_populates="gym"
     )

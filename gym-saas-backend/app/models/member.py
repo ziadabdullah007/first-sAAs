@@ -1,5 +1,6 @@
 from sqlalchemy import String, Date, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from datetime import date
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -35,7 +36,9 @@ class Member(Base):
         String(50)
     )
 
-    date_of_birth: Mapped[Date | None]
+    date_of_birth: Mapped[date | None]= mapped_column(
+    Date
+)
 
     gender: Mapped[str | None] = mapped_column(
         String(20)
