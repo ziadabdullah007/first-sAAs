@@ -34,3 +34,6 @@ class MemberResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+    
