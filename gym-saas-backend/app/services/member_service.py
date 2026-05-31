@@ -2,7 +2,7 @@ from uuid import UUID
 
 from app.models.member import Member
 from app.repositories.member_repository import MemberRepository
-
+from datetime import datetime
 
 class MemberService:
 
@@ -15,14 +15,28 @@ class MemberService:
         return MemberRepository.get_by_id(db, member_id)
 
     @staticmethod
+
     def create_member(db, member_data: dict):
+
+        now = datetime.utcnow()
+
+        member_data["status"] = "active"
+        member_data["joined_at"] = now
+        member_data["created_at"] = now
+        member_data["updated_at"] = now
+
         member = Member(**member_data)
 
         return MemberRepository.create(
-            db,
-            member
-        )
+        db,
+        member
+    )
 
     @staticmethod
     def delete_member(db, member: Member):
         return MemberRepository.delete(db, member)
+    
+
+
+
+    
