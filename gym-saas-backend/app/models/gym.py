@@ -48,8 +48,12 @@ class Gym(Base):
         DateTime(timezone=True)
     )
 
-    # Relationships
     members = relationship(
-        "Member",
-        back_populates="gym"
+    "Member",
+    back_populates="gym"
+    )
+
+    gym_subscriptions = relationship(
+    "GymSubscription",
+    back_populates="gym"
     )
