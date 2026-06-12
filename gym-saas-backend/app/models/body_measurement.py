@@ -13,10 +13,10 @@ class BodyMeasurement(Base):
     __tablename__ = "body_measurements"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True
+    UUID(as_uuid=True),
+    primary_key=True,
+    default=uuid.uuid4
     )
-
     member = relationship(
         "Member",
         back_populates="body_measurements"
