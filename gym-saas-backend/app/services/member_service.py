@@ -1,8 +1,9 @@
 from uuid import UUID
+from datetime import datetime
 
 from app.models.member import Member
 from app.repositories.member_repository import MemberRepository
-from datetime import datetime
+
 
 class MemberService:
 
@@ -15,7 +16,6 @@ class MemberService:
         return MemberRepository.get_by_id(db, member_id)
 
     @staticmethod
-
     def create_member(db, member_data: dict):
 
         now = datetime.utcnow()
@@ -28,15 +28,49 @@ class MemberService:
         member = Member(**member_data)
 
         return MemberRepository.create(
-        db,
-        member
-    )
+            db,
+            member
+        )
 
     @staticmethod
-    def delete_member(db, member: Member):
-        return MemberRepository.delete(db, member)
-    
+    def update_member(db, member_id: UUID, update_data: dict):
 
+        member = MemberRepository.get_by_id(
+            db,
+            member_id
+        )
 
+        if not member:
+            return None
 
-    
+        for key, value in update_data.items():
+
+            if value is not None:
+                setattr(member, key, value)
+
+        member.updated_at = datetime.utcnow()
+
+        return MemberRepository.update(
+            db,
+            member
+        )
+
+    @staticmethod
+    def delete_member_by_id(db, member_id: UUID):
+
+        member = MemberRepository.get_by_id(
+            db,
+            member_id
+        )
+
+        if not member:
+            return None
+
+        MemberRepository.delete(
+            db,
+            member
+        )
+
+        return {
+            "message": "Member deleted successfully"
+        }
