@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from app.api.v1.member_routes import router as member_router
 from app.api.v1.plan_routes import router as plan_router
+from app.api.v1.auth_routes import (
+    router as auth_router
+)
 from app.api.v1.dashboard_routes import (
     router as dashboard_router
 )
@@ -22,6 +25,7 @@ app = FastAPI(
 )
 app.include_router(member_router)
 app.include_router(plan_router)
+app.include_router(auth_router)
 app.include_router(body_measurement_router)
 app.include_router(payment_router)
 app.include_router(subscription_router)
