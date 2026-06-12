@@ -13,5 +13,5 @@ python-jose[cryptography]
 passlib[bcrypt]
 
 alembic
-
+supabase
 email-validator
