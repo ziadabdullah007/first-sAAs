@@ -30,7 +30,7 @@ class PaymentService:
         payment_data: dict
     ):
 
-        payment_data["status"] = "paid"
+        payment_data["status"] = "completed"
         payment_data["payment_date"] = datetime.utcnow()
 
         payment = Payment(
