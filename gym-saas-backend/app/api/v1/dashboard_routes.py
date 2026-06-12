@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -13,8 +15,12 @@ router = APIRouter(
 )
 
 
-@router.get("/stats")
+@router.get("/stats/{gym_id}")
 def get_dashboard_stats(
+    gym_id: UUID,
     db: Session = Depends(get_db)
 ):
-    return DashboardService.get_stats(db)
+    return DashboardService.get_stats(
+        db,
+        gym_id
+    )

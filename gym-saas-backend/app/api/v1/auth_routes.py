@@ -1,4 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
 
 from app.schemas.auth_schema import (
     RegisterRequest
@@ -16,10 +20,11 @@ router = APIRouter(
 
 @router.post("/register")
 def register(
-    user: RegisterRequest
+    user: RegisterRequest,
+    db: Session = Depends(get_db)
 ):
 
     return AuthService.register(
-        user.email,
-        user.password
+        db,
+        user.model_dump()
     )
