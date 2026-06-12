@@ -2,7 +2,7 @@
 
 A multi-tenant Gym Management SaaS platform built with FastAPI, SQLAlchemy, PostgreSQL (Supabase), and AI-powered analytics.
 
----
+---vv
 
 # Project Overview
 
