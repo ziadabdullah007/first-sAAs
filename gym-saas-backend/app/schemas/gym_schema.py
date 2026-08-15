@@ -5,9 +5,15 @@ from typing import Optional
 
 class GymCreate(BaseModel):
     name: str
+
     owner_name: str
-    email: EmailStr
+
+    owner_email: EmailStr
+
+    owner_password: str
+
     phone: Optional[str] = None
+
     address: Optional[str] = None
 
 
@@ -35,3 +41,7 @@ class GymResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+class AssignAdminRequest(BaseModel):
+    user_profile_id: UUID

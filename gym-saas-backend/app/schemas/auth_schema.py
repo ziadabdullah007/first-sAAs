@@ -9,3 +9,16 @@ class RegisterRequest(BaseModel):
 
     first_name: str | None = None
     last_name: str | None = None
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: str
+    auth_user_id: str
+    email: str | None
+    role: str
+    gym_id: str | None
