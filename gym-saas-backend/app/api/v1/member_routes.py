@@ -1,5 +1,5 @@
 from uuid import UUID
-
+from app.core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -18,15 +18,21 @@ router = APIRouter(
 
 @router.get("/")
 def get_members(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+    allowed_roles = ["super_admin", "gym_admin"]
 ):
     return MemberService.get_all_members(db)
 
 
 @router.get("/{member_id}")
 def get_member(
-    member_id: UUID,
-    db: Session = Depends(get_db)
+    member_id: UUID,       
+db: Session = Depends(get_db),
+
+    current_user = Depends(get_current_user),
+    allowed_roles = ["gym_admin"]
+
 ):
 
     member = MemberService.get_member_by_id(
@@ -46,7 +52,9 @@ def get_member(
 @router.post("/")
 def create_member(
     member: MemberCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+        allowed_roles = ["gym_admin","staff"]
 ):
     return MemberService.create_member(
         db,
@@ -58,7 +66,9 @@ def create_member(
 def update_member(
     member_id: UUID,
     member: MemberUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+    allowed_roles = ["gym_admin","staff"]
 ):
 
     updated_member = MemberService.update_member(
@@ -79,7 +89,9 @@ def update_member(
 @router.delete("/{member_id}")
 def delete_member(
     member_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+    allowed_roles = ["gym_admin","staff"]
 ):
 
     result = MemberService.delete_member_by_id(
