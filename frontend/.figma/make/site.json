@@ -1,0 +1,10 @@
+{
+  "description": "Streamline gym operations with a comprehensive management platform designed for gym owners and staff, enhancing member engagement and administrative efficiency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

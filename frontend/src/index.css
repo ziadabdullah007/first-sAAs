@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-bg: #f7f6f5;
+  --color-surface: #ffffff;
+  --color-border: #e4e2df;
+  --color-border-strong: #c9c7c3;
+
+  --color-text-primary: #111110;
+  --color-text-secondary: #6b6966;
+  --color-text-muted: #9b9895;
+
+  --color-accent: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-light: #eff6ff;
+  --color-accent-text: #1d4ed8;
+
+  --color-success: #15803d;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #bbf7d0;
+  --color-warning: #b45309;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fed7aa;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-info: #0369a1;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
+
+  --color-sidebar: #0f1623;
+  --color-sidebar-hover: #1a2336;
+  --color-sidebar-active: #243047;
+  --color-sidebar-text: #9aa5b8;
+  --color-sidebar-text-active: #e8edf5;
+  --color-sidebar-border: #1e2d45;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1cdc9; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b5b0aa; }
+
+/* Table */
+table { border-collapse: collapse; width: 100%; }
+th { font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-secondary); }
+
+/* Focus ring */
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* Input base */
+input, select, textarea { font-family: var(--font-sans); }
+
+/* Mono for data */
+.font-mono { font-family: var(--font-mono); }
