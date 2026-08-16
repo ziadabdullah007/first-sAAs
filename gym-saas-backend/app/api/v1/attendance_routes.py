@@ -7,7 +7,9 @@ from fastapi import (
 )
 
 from sqlalchemy.orm import Session
-
+from app.core.dependencies import (
+    require_role
+)
 from app.db.database import get_db
 
 from app.schemas.attendance_schema import (
@@ -27,7 +29,8 @@ router = APIRouter(
 
 @router.get("/")
 def get_attendance(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","owner","staff"]))
 ):
     return (
         AttendanceService
@@ -38,7 +41,9 @@ def get_attendance(
 @router.get("/{attendance_id}")
 def get_attendance_by_id(
     attendance_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin","owner","staff"]))
+
 ):
 
     attendance = (
@@ -61,7 +66,8 @@ def get_attendance_by_id(
 @router.post("/check-in")
 def check_in(
     attendance: AttendanceCheckIn,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","owner","staff"]))
 ):
 
     return (
@@ -76,7 +82,8 @@ def check_in(
 @router.post("/check-out")
 def check_out(
     attendance: AttendanceCheckOut,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","owner","staff"]))
 ):
 
     result = (

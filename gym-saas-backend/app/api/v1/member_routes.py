@@ -2,6 +2,7 @@ from uuid import UUID
 from app.core.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.core.dependencies import require_role
 
 from app.db.database import get_db
 from app.schemas.member_schema import (
@@ -19,8 +20,7 @@ router = APIRouter(
 @router.get("/")
 def get_members(
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
-    allowed_roles = ["super_admin", "gym_admin"]
+    current_user = Depends( require_role ( ["super_admin", "gym_admin"]))
 ):
     return MemberService.get_all_members(db)
 
@@ -30,8 +30,7 @@ def get_member(
     member_id: UUID,       
 db: Session = Depends(get_db),
 
-    current_user = Depends(get_current_user),
-    allowed_roles = ["gym_admin"]
+    current_user = Depends( require_role ( ["gym_admin"]))
 
 ):
 
@@ -53,8 +52,8 @@ db: Session = Depends(get_db),
 def create_member(
     member: MemberCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
-        allowed_roles = ["gym_admin","staff"]
+        current_user = Depends( require_role ( ["gym_admin", "staff", "owner"]))
+
 ):
     return MemberService.create_member(
         db,
@@ -67,8 +66,8 @@ def update_member(
     member_id: UUID,
     member: MemberUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
-    allowed_roles = ["gym_admin","staff"]
+        current_user = Depends( require_role ( ["gym_admin" , "staff"]))
+
 ):
 
     updated_member = MemberService.update_member(
@@ -90,8 +89,7 @@ def update_member(
 def delete_member(
     member_id: UUID,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
-    allowed_roles = ["gym_admin","staff"]
+    current_user = Depends( require_role ( ["gym_admin","staff"]))
 ):
 
     result = MemberService.delete_member_by_id(

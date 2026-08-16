@@ -1,5 +1,8 @@
 from uuid import UUID
-
+from app.core.dependencies import get_current_user
+from app.core.dependencies import (
+    require_role
+)
 from fastapi import (
     APIRouter,
     Depends,
@@ -27,7 +30,9 @@ router = APIRouter(
 
 @router.get("/")
 def get_payments(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
     return PaymentService.get_all_payments(db)
 
@@ -35,7 +40,9 @@ def get_payments(
 @router.get("/{payment_id}")
 def get_payment(
     payment_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
 
     payment = PaymentService.get_payment_by_id(
@@ -55,7 +62,8 @@ def get_payment(
 @router.post("/")
 def create_payment(
     payment: PaymentCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","staff"]))
 ):
 
     return PaymentService.create_payment(
@@ -68,7 +76,8 @@ def create_payment(
 def update_payment(
     payment_id: UUID,
     payment: PaymentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","staff"]))
 ):
 
     updated_payment = (
@@ -91,7 +100,8 @@ def update_payment(
 @router.delete("/{payment_id}")
 def delete_payment(
     payment_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+     current_user = Depends( require_role ( ["gym_admin","staff"]))
 ):
 
     result = PaymentService.delete_payment(

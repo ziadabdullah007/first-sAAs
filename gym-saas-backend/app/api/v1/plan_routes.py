@@ -1,11 +1,13 @@
 from uuid import UUID
-
+from app.core.dependencies import (
+    require_role
+)
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException
 )
-
+from app.core.dependencies import get_current_user
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -27,7 +29,9 @@ router = APIRouter(
 
 @router.get("/")
 def get_plans(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
     return PlanService.get_all_plans(db)
 
@@ -35,7 +39,9 @@ def get_plans(
 @router.get("/{plan_id}")
 def get_plan(
     plan_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
 
     plan = PlanService.get_plan_by_id(
@@ -55,7 +61,9 @@ def get_plan(
 @router.post("/")
 def create_plan(
     plan: PlanCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
 
     return PlanService.create_plan(
@@ -68,7 +76,9 @@ def create_plan(
 def update_plan(
     plan_id: UUID,
     plan: PlanUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+       current_user = Depends( require_role ( ["gym_admin"]))
+
 ):
 
     updated_plan = PlanService.update_plan(
@@ -89,7 +99,9 @@ def update_plan(
 @router.delete("/{plan_id}")
 def delete_plan(
     plan_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin"]))
+    
 ):
 
     result = PlanService.delete_plan(

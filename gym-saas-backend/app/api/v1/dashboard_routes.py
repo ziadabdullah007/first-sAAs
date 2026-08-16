@@ -21,7 +21,7 @@ router = APIRouter(
 @router.get("/stats/{gym_id}")
 def get_dashboard_stats(
     gym_id: UUID,
-    current_user=Depends(require_role(["super_admin", "gym_admin"])),
+    current_user=Depends(require_role(["super_admin", "gym_admin","owner"])),
     db: Session = Depends(get_db)
 ):
     return DashboardService.get_stats(

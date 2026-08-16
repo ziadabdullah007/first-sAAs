@@ -1,5 +1,7 @@
 from uuid import UUID
-
+from app.core.dependencies import (
+    require_role
+)
 from fastapi import (
     APIRouter,
     Depends,
@@ -27,7 +29,8 @@ router = APIRouter(
 
 @router.get("/")
 def get_measurements(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["staff", "gym_admin","owner"]))
 ):
     return (
         BodyMeasurementService
@@ -39,6 +42,7 @@ def get_measurements(
 def get_measurement(
     measurement_id: UUID,
     db: Session = Depends(get_db)
+
 ):
 
     measurement = (
@@ -61,7 +65,9 @@ def get_measurement(
 @router.post("/")
 def create_measurement(
     measurement: BodyMeasurementCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["staff", "gym_admin","owner"]))
+
 ):
 
     return (
@@ -77,7 +83,9 @@ def create_measurement(
 def update_measurement(
     measurement_id: UUID,
     measurement: BodyMeasurementUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["staff", "gym_admin","owner"]))
+
 ):
 
     updated_measurement = (
@@ -101,7 +109,10 @@ def update_measurement(
 @router.delete("/{measurement_id}")
 def delete_measurement(
     measurement_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["staff", "gym_admin","owner"]))
+
+
 ):
 
     result = (

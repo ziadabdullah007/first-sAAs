@@ -1,5 +1,8 @@
 from uuid import UUID
 
+from app.core.dependencies import (
+    require_role
+)
 from fastapi import (
     APIRouter,
     Depends,
@@ -27,7 +30,8 @@ router = APIRouter(
 
 @router.get("/")
 def get_subscriptions(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends( require_role ( ["gym_admin","owner"]))
 ):
     return (
         SubscriptionService
@@ -38,7 +42,9 @@ def get_subscriptions(
 @router.get("/{subscription_id}")
 def get_subscription(
     subscription_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin","owner"]))
+
 ):
 
     subscription = (
@@ -61,7 +67,9 @@ def get_subscription(
 @router.post("/")
 def create_subscription(
     subscription: SubscriptionCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin","owner","staff"]))
+
 ):
 
     return (
@@ -77,7 +85,9 @@ def create_subscription(
 def update_subscription(
     subscription_id: UUID,
     subscription: SubscriptionUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin","owner"]))
+
 ):
 
     updated_subscription = (
@@ -101,7 +111,9 @@ def update_subscription(
 @router.delete("/{subscription_id}")
 def delete_subscription(
     subscription_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+        current_user = Depends( require_role ( ["gym_admin","owner"]))
+
 ):
 
     result = (
