@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { IconBell, IconChevronDown, IconLogOut, IconSettings } from "../ui/Icons";
 import Avatar from "../ui/Avatar";
-import { type AuthUser } from "../../data/fixtures";
+import { type AuthUser, getUserDisplayName, getUserInitials, ROLE_LABELS } from "../../types";
 
 interface HeaderProps {
   user: AuthUser;
@@ -10,14 +10,12 @@ interface HeaderProps {
   onMobileMenuToggle?: () => void;
 }
 
-const roleLabels: Record<string, string> = {
-  super_admin: "Super Admin",
-  gym_admin: "Gym Admin",
-  staff: "Staff",
-};
-
 export default function Header({ user, onLogout, title, onMobileMenuToggle }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(user);
+  const roleLabel = ROLE_LABELS[user.role] || user.role;
 
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-white border-b border-[#e5e3e0] flex-shrink-0 z-20">
@@ -53,10 +51,10 @@ export default function Header({ user, onLogout, title, onMobileMenuToggle }: He
             onClick={() => setMenuOpen((v) => !v)}
             className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-md hover:bg-[#f5f4f2] transition-colors"
           >
-            <Avatar initials={user.avatarInitials} size="sm" />
+            <Avatar initials={initials} size="sm" />
             <div className="hidden sm:block text-left">
-              <div className="text-[12px] font-semibold text-[#111110] leading-tight">{user.name}</div>
-              <div className="text-[10px] text-[#9b9895] leading-tight">{roleLabels[user.role]}</div>
+              <div className="text-[12px] font-semibold text-[#111110] leading-tight">{displayName}</div>
+              <div className="text-[10px] text-[#9b9895] leading-tight">{roleLabel}</div>
             </div>
             <IconChevronDown size={12} className="text-[#9b9895] ml-0.5" />
           </button>
@@ -64,10 +62,11 @@ export default function Header({ user, onLogout, title, onMobileMenuToggle }: He
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1.5 w-48 bg-white border border-[#e5e3e0] rounded-lg shadow-lg z-20 overflow-hidden py-1">
+              <div className="absolute right-0 top-full mt-1.5 w-52 bg-white border border-[#e5e3e0] rounded-lg shadow-xl shadow-black/8 z-20 overflow-hidden py-1 animate-fade-in">
                 <div className="px-3.5 py-2.5 border-b border-[#f0efed]">
-                  <div className="text-[12px] font-semibold text-[#111110]">{user.name}</div>
-                  <div className="text-[11px] text-[#9b9895] mt-0.5">{user.email}</div>
+                  <div className="text-[12px] font-semibold text-[#111110]">{displayName}</div>
+                  <div className="text-[11px] text-[#9b9895] mt-0.5 truncate">{user.email}</div>
+                  <div className="text-[10px] text-[#1d4ed8] mt-1 font-medium">{roleLabel}</div>
                 </div>
                 <button className="w-full text-left flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-[#3d3b38] hover:bg-[#f5f4f2] transition-colors">
                   <IconSettings size={13} className="text-[#9b9895]" />

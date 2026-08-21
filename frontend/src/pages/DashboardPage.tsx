@@ -1,22 +1,20 @@
+// src/pages/DashboardPage.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import {
-  MEMBERS, SUBSCRIPTIONS, PAYMENTS, ATTENDANCE, ATTENDANCE_TREND, REVENUE_TREND, type AuthUser,
-} from "../data/fixtures";
-import { statusBadge } from "../components/ui/Badge";
-import Avatar from "../components/ui/Avatar";
 import Button from "../components/ui/Button";
 import { DashboardSkeleton } from "../components/ui/Skeleton";
-import { IconMembers, IconAttendance, IconSubscriptions, IconPayments, IconWarning, IconPlus } from "../components/ui/Icons";
+import { IconMembers, IconAttendance, IconSubscriptions, IconPayments, IconPlus } from "../components/ui/Icons";
+import { dashboard } from "../api/dashboard";
+import { type AuthUser } from "../types";
 
 interface Props { user: AuthUser }
 
-function KPI({ label, value, sub, icon, alert }: { label: string; value: string | number; sub?: string; icon?: React.ReactNode; alert?: boolean }) {
+function KPI({ label, value, sub, icon, alert, delay }: { label: string; value: string | number; sub?: string; icon?: React.ReactNode; alert?: boolean; delay?: string }) {
   return (
-    <div className="bg-white border border-[#e5e3e0] rounded-lg px-4 py-3.5 flex gap-3">
+    <div className="bg-white border border-[#e5e3e0] rounded-xl px-4 py-4 flex gap-3.5 hover:shadow-md hover:shadow-black/[0.03] hover:-translate-y-0.5 transition-all duration-200 animate-slide-up" style={{ animationDelay: delay }}>
       {icon && (
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${alert ? "bg-amber-50 text-amber-600" : "bg-[#eff6ff] text-[#1d4ed8]"}`}>
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${alert ? "bg-amber-50 text-amber-600" : "bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] text-[#1d4ed8]"}`}>
           {icon}
         </div>
       )}
@@ -32,7 +30,7 @@ function KPI({ label, value, sub, icon, alert }: { label: string; value: string 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-[#e5e3e0] rounded-lg px-3 py-2 shadow-sm">
+    <div className="bg-white border border-[#e5e3e0] rounded-lg px-3 py-2 shadow-lg shadow-black/[0.06]">
       <div className="text-[11px] text-[#9b9895] mb-1">{label}</div>
       <div className="text-[13px] font-semibold text-[#111110]">{payload[0].value}</div>
     </div>
@@ -42,37 +40,70 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 export default function DashboardPage({ user }: Props) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const today = "2025-08-15";
+  const [stats, setStats] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const gymId = user.gym_id;
+        if (!gymId) {
+          throw new Error('Gym context not found');
+        }
+        const data = await dashboard.getDashboardStats(gymId);
+        setStats(data);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user.gym_id]);
 
   if (loading) {
     return <div className="p-6"><DashboardSkeleton /></div>;
   }
 
-  const activeMembers = MEMBERS.filter((m) => m.status === "active").length;
-  const todayAttendance = ATTENDANCE.filter((a) => a.date === today).length;
-  const currentlyIn = ATTENDANCE.filter((a) => a.date === today && !a.checkOut).length;
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-4 animate-fade-in">
+          <div className="text-sm text-red-800 mb-2">{error}</div>
+          <Button onClick={() => window.location.reload()} size="sm" variant="secondary">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const expiringSoon = SUBSCRIPTIONS.filter((s) => {
-    if (s.status !== "active") return false;
-    const days = Math.ceil((new Date(s.endDate).getTime() - new Date(today).getTime()) / 86400000);
-    return days >= 0 && days <= 7;
-  });
+  if (!stats) {
+    return <div className="p-6 text-center text-[#9b9895]">Loading dashboard data...</div>;
+  }
 
-  const recentPayments = [...PAYMENTS].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
-  const recentVisits = [...ATTENDANCE].sort((a, b) => b.date.localeCompare(a.date) || b.checkIn.localeCompare(a.checkIn)).slice(0, 6);
+  const attendanceTrend = [
+    { day: "Mon", count: 48 }, { day: "Tue", count: 55 },
+    { day: "Wed", count: 62 }, { day: "Thu", count: 51 },
+    { day: "Fri", count: 43 }, { day: "Sat", count: 79 },
+    { day: "Sun", count: 34 },
+  ];
+
+  const revenueTrend = [
+    { month: "Jan", revenue: 8500 }, { month: "Feb", revenue: 9200 },
+    { month: "Mar", revenue: 7800 }, { month: "Apr", revenue: 10500 },
+    { month: "May", revenue: 9800 }, { month: "Jun", revenue: 12400 },
+  ];
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px]">
       {/* Page header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-[15px] font-semibold text-[#111110]">{user.gym ?? "Dashboard"}</h1>
-          <p className="text-xs text-[#9b9895] mt-0.5">Friday, August 15, 2025</p>
+          <h1 className="text-[16px] font-bold text-[#111110]">Dashboard</h1>
+          <p className="text-xs text-[#9b9895] mt-0.5">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="secondary" onClick={() => navigate("/members")}>
@@ -86,68 +117,31 @@ export default function DashboardPage({ user }: Props) {
 
       {/* KPI row */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-        <KPI
-          label="Total Members"
-          value={MEMBERS.length}
-          sub={`${activeMembers} active · ${MEMBERS.length - activeMembers} inactive`}
-          icon={<IconMembers size={15} />}
-        />
-        <KPI
-          label="Today's Check-ins"
-          value={todayAttendance}
-          sub={`${currentlyIn} currently in gym`}
-          icon={<IconAttendance size={15} />}
-        />
-        <KPI
-          label="Expiring Soon"
-          value={expiringSoon.length}
-          sub="Memberships within 7 days"
-          icon={<IconSubscriptions size={15} />}
-          alert={expiringSoon.length > 0}
-        />
-        <KPI
-          label="Aug Revenue"
-          value={`EGP 12,450`}
-          sub="Month to date · 11 payments"
-          icon={<IconPayments size={15} />}
-        />
+        <KPI label="Total Members" value={stats.total_members} sub="Active members" icon={<IconMembers size={16} />} delay="0.05s" />
+        <KPI label="Currently In Gym" value={stats.members_inside_gym ?? 0} sub="Checked in now" icon={<IconAttendance size={16} />} delay="0.1s" />
+        <KPI label="Active Plans" value={stats.total_plans} sub="Membership plans" icon={<IconSubscriptions size={16} />} delay="0.15s" />
+        <KPI label="Monthly Revenue" value={`EGP ${stats.monthly_revenue?.toLocaleString() ?? '0'}`} sub={`From ${stats.total_payments} payments`} icon={<IconPayments size={16} />} delay="0.2s" />
       </div>
-
-      {/* Action alert */}
-      {expiringSoon.length > 0 && (
-        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
-          <IconWarning size={14} className="text-amber-600 flex-shrink-0" />
-          <p className="text-xs text-amber-800 font-medium flex-1">
-            {expiringSoon.length === 1
-              ? `${expiringSoon[0].memberName}'s membership expires ${expiringSoon[0].endDate} — renew to avoid access loss.`
-              : `${expiringSoon.length} memberships expire within 7 days: ${expiringSoon.map(s => s.memberName).join(", ")}.`
-            }
-          </p>
-          <Button size="sm" variant="secondary" onClick={() => navigate("/subscriptions")}>
-            Review Subscriptions
-          </Button>
-        </div>
-      )}
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Attendance chart — 2 cols */}
-        <div className="xl:col-span-2 bg-white border border-[#e5e3e0] rounded-lg p-4">
+        {/* Attendance chart */}
+        <div className="xl:col-span-2 bg-white border border-[#e5e3e0] rounded-xl p-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="text-[12px] font-semibold text-[#111110]">Attendance — This Week</div>
-              <div className="text-[11px] text-[#9b9895] mt-0.5">Daily check-ins, Aug 9–15</div>
+              <div className="text-[13px] font-semibold text-[#111110]">Attendance — This Week</div>
+              <div className="text-[11px] text-[#9b9895] mt-0.5">Daily check-ins</div>
             </div>
             <div className="text-right">
-              <div className="text-xl font-bold text-[#111110] tabular-nums">372</div>
+              <div className="text-xl font-bold text-[#111110] tabular-nums">{attendanceTrend.reduce((s, d) => s + d.count, 0)}</div>
               <div className="text-[11px] text-[#9b9895]">total this week</div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={148}>
-            <AreaChart data={ATTENDANCE_TREND} margin={{ top: 4, right: 4, left: -22, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={attendanceTrend} margin={{ top: 4, right: 4, left: -22, bottom: 0 }}>
               <defs>
                 <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.1} />
+                  <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.12} />
                   <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -155,156 +149,48 @@ export default function DashboardPage({ user }: Props) {
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9b9895" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "#9b9895" }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="count" stroke="#1d4ed8" strokeWidth={1.75} fill="url(#grad)" name="Check-ins" dot={false} activeDot={{ r: 4, strokeWidth: 2 }} />
+              <Area type="monotone" dataKey="count" stroke="#1d4ed8" strokeWidth={2} fill="url(#grad)" name="Check-ins" dot={false} activeDot={{ r: 4, strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Currently in gym */}
-        <div className="bg-white border border-[#e5e3e0] rounded-lg">
-          <div className="px-4 py-3 border-b border-[#e5e3e0] flex items-center justify-between">
-            <div className="text-[12px] font-semibold text-[#111110]">Currently In Gym</div>
-            <span className="text-[11px] font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md">
-              {currentlyIn} active
-            </span>
-          </div>
-          <div className="divide-y divide-[#f5f4f2]">
-            {ATTENDANCE.filter(a => a.date === today && !a.checkOut).length === 0 ? (
-              <div className="px-4 py-8 text-center text-xs text-[#9b9895]">No active visits right now.</div>
-            ) : ATTENDANCE.filter(a => a.date === today && !a.checkOut).map(a => {
-              const m = MEMBERS.find(mb => mb.id === a.memberId);
-              return (
-                <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <Avatar initials={m?.avatarInitials ?? "??"} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-[#111110] truncate">{a.memberName}</div>
-                    <div className="text-[11px] text-[#9b9895]">Since {a.checkIn}</div>
-                  </div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                </div>
-              );
-            })}
-          </div>
-          <div className="px-4 py-2.5 border-t border-[#e5e3e0]">
-            <button onClick={() => navigate("/attendance")} className="text-[11px] text-[#1d4ed8] hover:underline">
-              View full attendance log →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Revenue + Recent tables */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Revenue chart */}
-        <div className="bg-white border border-[#e5e3e0] rounded-lg p-4">
-          <div className="text-[12px] font-semibold text-[#111110] mb-0.5">Revenue Trend</div>
+        <div className="bg-white border border-[#e5e3e0] rounded-xl p-5 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="text-[13px] font-semibold text-[#111110] mb-0.5">Revenue Trend</div>
           <div className="text-[11px] text-[#9b9895] mb-4">Last 6 months, EGP</div>
-          <ResponsiveContainer width="100%" height={130}>
-            <BarChart data={REVENUE_TREND} margin={{ top: 0, right: 0, left: -26, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: -26, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="#f5f4f2" />
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9b9895" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: "#9b9895" }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}k`} />
               <Tooltip
-                contentStyle={{ fontSize: 11, border: "1px solid #e5e3e0", borderRadius: 6, background: "white", boxShadow: "none" }}
-                formatter={(v: number) => [`EGP ${v.toLocaleString()}`, "Revenue"]}
+                contentStyle={{ fontSize: 11, border: "1px solid #e5e3e0", borderRadius: 8, background: "white", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
+                formatter={(v: any) => [`EGP ${Number(v).toLocaleString()}`, "Revenue"]}
               />
-              <Bar dataKey="revenue" fill="#1d4ed8" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="revenue" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Recent payments */}
-        <div className="bg-white border border-[#e5e3e0] rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#e5e3e0] flex items-center justify-between">
-            <div className="text-[12px] font-semibold text-[#111110]">Recent Payments</div>
-            <button onClick={() => navigate("/payments")} className="text-[11px] text-[#1d4ed8] hover:underline">View all</button>
-          </div>
-          <div className="divide-y divide-[#f5f4f2]">
-            {recentPayments.map(p => (
-              <div key={p.id} className="flex items-center px-4 py-2.5 gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-medium text-[#111110] truncate">{p.memberName}</div>
-                  <div className="text-[11px] text-[#9b9895]">{p.date} · {p.method.replace("_", " ")}</div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="text-[12px] font-semibold text-[#111110] tabular-nums">EGP {p.amount.toLocaleString()}</div>
-                  <div className="mt-0.5">{statusBadge(p.status)}</div>
-                </div>
+        {/* Quick stats */}
+        <div className="bg-white border border-[#e5e3e0] rounded-xl p-5 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+          <div className="text-[13px] font-semibold text-[#111110] mb-4">Gym Overview</div>
+          <div className="space-y-3">
+            {[
+              { label: "Total Members", value: stats.total_members },
+              { label: "Active Plans", value: stats.total_plans },
+              { label: "Active Subscriptions", value: stats.active_subscriptions ?? 0 },
+              { label: "Payments This Month", value: stats.total_payments ?? 0 },
+              { label: "Members Inside Gym", value: stats.members_inside_gym ?? 0 },
+            ].map(item => (
+              <div key={item.label} className="flex justify-between items-center py-1">
+                <span className="text-[12px] text-[#6b6966]">{item.label}</span>
+                <span className="text-[13px] font-semibold text-[#111110] tabular-nums">{item.value}</span>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Recent check-ins */}
-        <div className="bg-white border border-[#e5e3e0] rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#e5e3e0] flex items-center justify-between">
-            <div className="text-[12px] font-semibold text-[#111110]">Recent Activity</div>
-            <button onClick={() => navigate("/attendance")} className="text-[11px] text-[#1d4ed8] hover:underline">View all</button>
-          </div>
-          <div className="divide-y divide-[#f5f4f2]">
-            {recentVisits.map(a => {
-              const m = MEMBERS.find(mb => mb.id === a.memberId);
-              return (
-                <div key={a.id} className="flex items-center px-4 py-2.5 gap-2.5">
-                  <Avatar initials={m?.avatarInitials ?? "??"} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-[#111110] truncate">{a.memberName}</div>
-                    <div className="text-[11px] text-[#9b9895] font-mono">{a.date} · {a.checkIn}</div>
-                  </div>
-                  {!a.checkOut && (
-                    <span className="text-[10px] font-semibold text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">Active</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
-
-      {/* Expiring memberships detail */}
-      {expiringSoon.length > 0 && (
-        <div className="bg-white border border-[#e5e3e0] rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#e5e3e0]">
-            <div className="text-[12px] font-semibold text-[#111110]">Expiring Memberships — Next 7 Days</div>
-          </div>
-          <table className="w-full">
-            <thead>
-              <tr className="bg-[#fafaf9] border-b border-[#e5e3e0]">
-                <th className="text-left px-4 py-2">Member</th>
-                <th className="text-left px-4 py-2">Plan</th>
-                <th className="text-left px-4 py-2">Expires</th>
-                <th className="text-left px-4 py-2">Auto-renew</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {expiringSoon.map((s, i) => {
-                const days = Math.ceil((new Date(s.endDate).getTime() - new Date(today).getTime()) / 86400000);
-                const m = MEMBERS.find(mb => mb.id === s.memberId);
-                return (
-                  <tr key={s.id} className={`${i < expiringSoon.length - 1 ? "border-b border-[#f5f4f2]" : ""} hover:bg-[#fafaf9]`}>
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar initials={m?.avatarInitials ?? "??"} size="sm" />
-                        <span className="text-[13px] font-medium text-[#111110]">{s.memberName}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-[#6b6966]">{s.planName}</td>
-                    <td className="px-4 py-2.5">
-                      <span className="text-xs font-medium text-amber-700">{s.endDate}</span>
-                      <span className="text-[11px] text-amber-500 ml-1.5">in {days}d</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-[#6b6966]">{s.autoRenew ? "Yes" : "No"}</td>
-                    <td className="px-4 py-2.5 text-right">
-                      <button className="text-[11px] text-[#1d4ed8] hover:underline">Renew</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

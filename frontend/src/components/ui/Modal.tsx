@@ -23,16 +23,29 @@ export default function Modal({ open, onClose, title, children, footer, size = "
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className={`relative bg-white rounded-lg shadow-xl w-full ${sizes[size]} flex flex-col max-h-[90vh]`}>
+      {/* Backdrop with blur */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
+      {/* Modal content with slide-up entrance */}
+      <div className={`relative bg-white rounded-xl shadow-2xl shadow-black/10 w-full ${sizes[size]} flex flex-col max-h-[90vh] animate-scale-in`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4e2df]">
           <h2 className="text-sm font-semibold text-[#111110]">{title}</h2>
-          <button onClick={onClose} className="text-[#9b9895] hover:text-[#111110] transition-colors">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <button onClick={onClose} className="text-[#9b9895] hover:text-[#111110] transition-colors rounded-md hover:bg-[#f0efed] w-7 h-7 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
@@ -41,7 +54,7 @@ export default function Modal({ open, onClose, title, children, footer, size = "
           {children}
         </div>
         {footer && (
-          <div className="px-5 py-3 border-t border-[#e4e2df] flex items-center justify-end gap-2 bg-[#fafaf9]">
+          <div className="px-5 py-3 border-t border-[#e4e2df] flex items-center justify-end gap-2 bg-[#fafaf9] rounded-b-xl">
             {footer}
           </div>
         )}

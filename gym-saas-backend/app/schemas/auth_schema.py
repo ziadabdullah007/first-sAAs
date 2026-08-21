@@ -4,9 +4,7 @@ from pydantic import BaseModel, EmailStr
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
-
     role: str = "owner"
-
     first_name: str | None = None
     last_name: str | None = None
 
@@ -22,3 +20,11 @@ class UserResponse(BaseModel):
     email: str | None
     role: str
     gym_id: str | None
+    first_name: str | None = None
+    last_name: str | None = None
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

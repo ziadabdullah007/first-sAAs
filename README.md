@@ -1,267 +1,279 @@
-# Gym SaaS Backend
+# Gym Management SaaS
+
+A production-ready, multi-tenant Gym Management platform built with React, TypeScript, FastAPI, and Supabase.
+
+## Architecture
+
+```
+React + TypeScript Frontend
+         │
+         │ HTTPS / REST API
+         ▼
+     FastAPI Backend
+         │
+    ┌────┴────┐
+    │         │
+Supabase Auth  PostgreSQL
+    │         │
+    └────┬────┘
+         │
+    Gym/Tenant Data
+```
+
+## Features
+
+### Core Business Features
+- **Authentication & Authorization**: JWT-based auth with role-based access control
+- **Multi-Tenant Architecture**: Complete gym isolation with IDOR protection
+- **Member Management**: CRUD operations for gym members
+- **Membership Plans**: Create and manage subscription plans
+- **Subscriptions**: Member subscription management with auto-renewal
+- **Payments**: Track and manage member payments
+- **Attendance**: Check-in/check-out tracking
+- **Body Measurements**: Track member fitness metrics
+- **Staff Management**: Staff creation and management
+- **Dashboard**: Real-time gym metrics and analytics
+- **Gym Management**: Platform-level gym administration (super admin)
+
+### Security Features
+- Role-based access control (super_admin, gym_admin, staff, owner)
+- Multi-tenant data isolation
+- Input validation on all endpoints
+- CORS protection
+- Health check endpoint
+- Secure error handling (no stack traces exposed)
+
+## Technology Stack
+
+### Backend
+- **FastAPI** - Modern Python web framework
+- **SQLAlchemy 2.x** - ORM for database operations
+- **Supabase** - PostgreSQL database and authentication
+- **Pydantic v2** - Data validation
+- **Uvicorn** - ASGI server
+- **Pytest** - Testing framework
+- **Ruff** - Linting
+
+### Frontend
+- **React 19** - UI library
+- **TypeScript 5.7** - Type safety
+- **Vite 8** - Build tool
+- **Tailwind CSS v4** - Styling
+- **React Router v7** - Routing
+- **Recharts** - Data visualization
+- **Axios** - HTTP client
+
+### Infrastructure
+- **Docker** - Containerization
+- **Docker Compose** - Local development
+- **GitHub Actions** - CI/CD
+
+## Project Structure
+
+```
+.
+├── gym-saas-backend/
+│   ├── app/
+│   │   ├── api/v1/          # API routes
+│   │   ├── core/            # Configuration, security, dependencies
+│   │   ├── db/              # Database setup
+│   │   ├── models/          # SQLAlchemy models
+│   │   ├── repositories/    # Data access layer
+│   │   ├── schemas/         # Pydantic schemas
+│   │   ├── services/        # Business logic
+│   │   └── main.py          # FastAPI application
+│   ├── tests/               # Backend tests
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── api/             # API client modules
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/           # Page components
+│   │   ├── types/           # TypeScript types
+│   │   └── main.tsx         # React entrypoint
+│   ├── package.json
+│   ├── Dockerfile
+│   └── nginx.conf
+├── docker-compose.yml
+├── .env.example
+└── .github/workflows/       # CI/CD pipelines
+```
 
-A multi-tenant Gym Management SaaS platform built with FastAPI, SQLAlchemy, PostgreSQL (Supabase), and AI-powered analytics.
+## Quick Start
 
----vv
+### Prerequisites
 
-# Project Overview
+- Python 3.11+
+- Node.js 20+
+- pnpm (for frontend)
+- Docker & Docker Compose (optional)
+- Supabase account
 
-Gym SaaS is a backend system designed to help gym owners manage:
- 
-* Members
-* Membership Plans
-* Subscriptions
-* Payments
-* Attendance
-* Body Measurements
-* Staff & Roles
-* Multi-Gym SaaS Management
+### Local Development
 
-The platform is being developed using a clean architecture approach with:
+#### 1. Clone the repository
 
-* FastAPI
-* SQLAlchemy ORM
-* PostgreSQL (Supabase)
-* Repository Pattern
-* Service Layer Pattern
+```bash
+git clone <repository-url>
+cd first-sAAs
+```
 
----
+#### 2. Set up environment variables
 
-# Current Progress
+```bash
+cp .env.example .env
+```
 
-## Phase 1: Project Foundation ✅
+Edit `.env` with your configuration:
 
-Completed:
+```env
+# Backend
+DATABASE_URL=postgresql://username:password@localhost:5432/gym_saas
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+SUPABASE_SECRET_KEY=your-secret-key
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+ENVIRONMENT=development
+DEBUG=true
 
-* Project structure setup
-* FastAPI configuration
-* Supabase PostgreSQL connection
-* SQLAlchemy integration
-* Environment configuration (.env)
-* Swagger documentation
-* Database connectivity testing
+# Frontend
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
 
----
+#### 3. Start with Docker Compose (Recommended)
 
-## Phase 2: Database Design ✅
+```bash
+docker compose up --build
+```
 
-Created core database entities:
+This starts:
+- Backend: http://localhost:8000
+- Frontend: http://localhost
+- API docs: http://localhost:8000/docs
 
-* gyms
-* members
-* plans
-* subscriptions
-* payments
-* attendance
-* body_measurements
-* user_profiles
-* saas_plans
-* gym_subscriptions
+#### 4. Or run manually
 
----
+**Backend:**
+```bash
+cd gym-saas-backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-## Phase 3: SQLAlchemy Models ✅
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Implemented models for:
+## API Documentation
 
-* Gym
-* Member
-* Plan
-* Subscription
-* Payment
-* Attendance
-* BodyMeasurement
-* UserProfile
-* SaaSPlan
-* GymSubscription
+Once the backend is running, access interactive API documentation:
 
----
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-## Phase 4: Relationships ✅
+### Authentication
 
-Implemented ORM relationships:
+All protected endpoints require a Bearer token obtained via `/auth/login` or `/auth/register`.
 
-Gym
-└── Members
+```bash
+# Login
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password"}'
 
-Member
-├── Subscriptions
-├── Payments
-├── Attendance Records
-└── Body Measurements
+# Use token in subsequent requests
+curl -X GET "http://localhost:8000/api/v1/members" \
+  -H "Authorization: Bearer <your-token>"
+```
 
-Plan
-└── Subscriptions
+## User Roles
 
-Subscription
-└── Payments
+| Role | Access |
+|------|--------|
+| super_admin | Full platform access, gym management |
+| gym_admin | Full gym access, member/plan/staff management |
+| staff | Member management, attendance, measurements |
+| owner | Similar to gym_admin |
 
-SaaSPlan
-└── Gym Subscriptions
+## Testing
 
----
+### Backend Tests
 
-## Phase 5: First CRUD Module (Members) 🚧
+```bash
+cd gym-saas-backend
+pytest tests/ -v
+```
 
-Completed:
+### Frontend TypeScript Check
 
-### Create Member
+```bash
+cd frontend
+npm run typecheck
+```
 
-POST /members
+### Frontend Lint
 
-Successfully inserts a new member into Supabase.
+```bash
+cd frontend
+npm run lint
+```
 
-### Get All Members
+## CI/CD
 
-GET /members
+GitHub Actions workflows run automatically on push/PR:
 
-Successfully retrieves members from Supabase.
+- **Backend CI**: Lint, tests, Docker build
+- **Frontend CI**: Lint, TypeScript check, build, Docker build
+- **Docker CI**: Verify all Docker images build successfully
 
-Current Status:
+## Deployment
 
-* Create Member ✅
-* Get All Members ✅
-* Get Member By ID ❌
-* Update Member ❌
-* Delete Member ❌
+### Environment Variables
 
----
+Never commit `.env` files. Use the following production environment variables:
 
-# Current Architecture
+**Backend:**
+- `DATABASE_URL` - PostgreSQL connection string
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
+- `SUPABASE_SECRET_KEY` - Supabase service role key (backend only)
+- `CORS_ORIGINS` - Allowed frontend origins
+- `ENVIRONMENT` - Set to `production`
+- `DEBUG` - Set to `false`
 
-app/
+**Frontend:**
+- `VITE_API_BASE_URL` - Backend API URL
 
-├── api/
+### Docker Production Deployment
 
-├── core/
+```bash
+# Build and start
+docker compose -f docker-compose.prod.yml up --build -d
 
-├── db/
+# View logs
+docker compose logs -f
 
-├── models/
+# Stop
+docker compose down
+```
 
-├── repositories/
+## Security Considerations
 
-├── schemas/
+- Never expose Supabase service-role key to frontend
+- Always use HTTPS in production
+- Rotate secrets regularly
+- Use environment variables for all configuration
+- Backend enforces all authorization (frontend is not a security boundary)
+- Multi-tenant isolation prevents cross-gym data access
 
-├── services/
+## License
 
-└── main.py
+MIT
 
----
+## Support
 
-# Technologies
-
-* Python 3.11
-* FastAPI
-* SQLAlchemy 2.x
-* PostgreSQL
-* Supabase
-* Pydantic v2
-* Uvicorn
-
----
-
-# Development Roadmap
-
-## Step 1
-
-Complete Members CRUD
-
-* GET Member By ID
-* Update Member
-* Delete Member
-
----
-
-## Step 2
-
-Plans CRUD
-
-* Create Plan
-* Update Plan
-* Delete Plan
-* Get Plans
-
----
-
-## Step 3
-
-Subscriptions Module
-
-* Create Subscription
-* Expiration Tracking
-* Renewal Management
-
----
-
-## Step 4
-
-Payments Module
-
-* Record Payments
-* Revenue Tracking
-
----
-
-## Step 5
-
-Attendance Module
-
-* Check In
-* Check Out
-* Attendance Analytics
-
----
-
-## Step 6
-
-Authentication & Authorization
-
-* JWT Authentication
-* Role-Based Access Control
-* Owner
-* Admin
-* Staff
-
----
-
-## Step 7
-
-Multi-Tenant SaaS
-
-* Gym Isolation
-* Subscription Billing
-* SaaS Plans
-
----
-
-## Step 8
-
-AI Features
-
-* Churn Prediction
-* Revenue Forecasting
-* Attendance Forecasting
-* AI Insights Dashboard
-
----
-
-# Current Completion Estimate
-
-Project Foundation: 100%
-
-Database Design: 100%
-
-Models: 100%
-
-Relationships: 100%
-
-Members Module: 40%
-
-Authentication: 0%
-
-Multi-Tenant SaaS: 0%
-
-AI Features: 0%
-
-Overall Progress: ~35%
+For issues and questions, please open an issue on GitHub.

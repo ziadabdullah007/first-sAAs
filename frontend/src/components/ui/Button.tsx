@@ -8,10 +8,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: "bg-[#1d4ed8] text-white hover:bg-[#1e40af] border border-[#1d4ed8] hover:border-[#1e40af]",
-  secondary: "bg-white text-[#111110] hover:bg-[#f5f4f2] border border-[#e4e2df]",
+  primary: "bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] text-white hover:from-[#1e40af] hover:to-[#1e40af] border border-[#1d4ed8] hover:border-[#1e40af] shadow-sm shadow-blue-500/10",
+  secondary: "bg-white text-[#111110] hover:bg-[#f5f4f2] border border-[#e4e2df] shadow-sm shadow-black/[0.03]",
   ghost: "bg-transparent text-[#111110] hover:bg-[#f0efed] border border-transparent",
-  danger: "bg-red-600 text-white hover:bg-red-700 border border-red-600",
+  danger: "bg-gradient-to-b from-[#ef4444] to-[#dc2626] text-white hover:from-[#dc2626] hover:to-[#b91c1c] border border-red-600 shadow-sm shadow-red-500/10",
   outline: "bg-transparent text-[#1d4ed8] hover:bg-[#eff6ff] border border-[#1d4ed8]",
 };
 
@@ -26,7 +26,7 @@ export default function Button({ variant = "primary", size = "default", loading,
     <button
       {...props}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-1.5 font-medium rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-[#1d4ed8] focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 font-medium rounded-lg transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#1d4ed8] focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] ${variants[variant]} ${sizes[size]} ${className}`}
     >
       {loading && (
         <svg className="animate-spin -ml-0.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">

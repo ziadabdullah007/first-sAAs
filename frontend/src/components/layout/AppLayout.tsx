@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { type AuthUser } from "../../data/fixtures";
+import { type AuthUser } from "../../types";
 
 const TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -36,10 +36,10 @@ export default function AppLayout({ user, onLogout }: AppLayoutProps) {
   )?.[1] ?? "";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f6f5f3]">
+    <div className="flex h-screen overflow-hidden bg-[#f7f6f5]">
       <Sidebar
         role={user.role}
-        gymName={user.gym}
+        gymName={user.gym_id ? undefined : undefined}
         collapsed={collapsed}
         onToggle={() => setCollapsed((v) => !v)}
         mobileOpen={mobileOpen}

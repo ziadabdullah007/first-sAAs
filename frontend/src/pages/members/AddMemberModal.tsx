@@ -1,102 +1,90 @@
+// src/pages/members/AddMemberModal.tsx
 import { useState } from "react";
 import Modal from "../../components/ui/Modal";
-import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
-import { PLANS } from "../../data/fixtures";
 import { useToast } from "../../components/ui/Toast";
+import { members } from "../../api/members";
+import { getStoredUser } from "../../api/auth";
 
-interface Props { open: boolean; onClose: () => void }
+interface AddMemberModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
 
-export default function AddMemberModal({ open, onClose }: Props) {
+export default function AddMemberModal({ open, onClose, onSuccess }: AddMemberModalProps) {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", phone: "", dob: "", gender: "", height: "", weight: "", planId: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    date_of_birth: "",
+    gender: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
-  const err = (k: string, v: string) => setErrors((e) => ({ ...e, [k]: v }));
-  const clearErr = (k: string) => setErrors((e) => { const n = { ...e }; delete n[k]; return n; });
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const validate = () => {
-    const errs: Record<string, string> = {};
-    if (!form.firstName) errs.firstName = "First name is required";
-    if (!form.lastName) errs.lastName = "Last name is required";
-    if (!form.email) errs.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Enter a valid email";
-    if (!form.phone) errs.phone = "Phone is required";
-    if (!form.gender) errs.gender = "Gender is required";
-    return errs;
+  const resetForm = () => {
+    setForm({ first_name: "", last_name: "", email: "", phone: "", date_of_birth: "", gender: "" });
   };
 
-  const handleSubmit = async () => {
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    toast("Member created successfully.");
-    onClose();
-    setForm({ firstName: "", lastName: "", email: "", phone: "", dob: "", gender: "", height: "", weight: "", planId: "" });
+  const handleSave = async () => {
+    if (!form.first_name || !form.last_name || !form.phone) {
+      toast("First name, last name, and phone are required.", "error");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const user = getStoredUser();
+      await members.createMember({
+        gym_id: user?.gym_id || "",
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email || undefined,
+        phone: form.phone,
+        date_of_birth: form.date_of_birth || undefined,
+        gender: form.gender || undefined,
+      });
+      toast("Member added successfully.");
+      resetForm();
+      onClose();
+      onSuccess?.();
+    } catch (err: any) {
+      toast(err.message || "Failed to add member", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={() => { resetForm(); onClose(); }}
       title="Add New Member"
-      size="lg"
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
-          <Button onClick={handleSubmit} loading={loading}>Create Member</Button>
-        </>
-      }
+      footer={<>
+        <Button variant="secondary" onClick={() => { resetForm(); onClose(); }}>Cancel</Button>
+        <Button onClick={handleSave} loading={saving}>Add Member</Button>
+      </>}
     >
-      <div className="space-y-5">
-        {/* Personal info */}
-        <div>
-          <div className="text-xs font-semibold text-[#111110] mb-3 pb-1.5 border-b border-[#e4e2df]">Personal Information</div>
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="First Name" required value={form.firstName} onChange={(e) => { set("firstName", e.target.value); clearErr("firstName"); }} error={errors.firstName} />
-            <Input label="Last Name" required value={form.lastName} onChange={(e) => { set("lastName", e.target.value); clearErr("lastName"); }} error={errors.lastName} />
-            <Input label="Email Address" type="email" required value={form.email} onChange={(e) => { set("email", e.target.value); clearErr("email"); }} error={errors.email} />
-            <Input label="Phone Number" required value={form.phone} onChange={(e) => { set("phone", e.target.value); clearErr("phone"); }} error={errors.phone} placeholder="+20 100 000 0000" />
-            <Input label="Date of Birth" type="date" value={form.dob} onChange={(e) => set("dob", e.target.value)} />
-            <Select
-              label="Gender"
-              required
-              value={form.gender}
-              onChange={(e) => { set("gender", e.target.value); clearErr("gender"); }}
-              error={errors.gender}
-              options={[{ value: "male", label: "Male" }, { value: "female", label: "Female" }]}
-              placeholder="Select gender"
-            />
-          </div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="First Name" required value={form.first_name} onChange={e => set("first_name", e.target.value)} placeholder="Ahmed" />
+          <Input label="Last Name" required value={form.last_name} onChange={e => set("last_name", e.target.value)} placeholder="Hassan" />
         </div>
-
-        {/* Physical info */}
-        <div>
-          <div className="text-xs font-semibold text-[#111110] mb-3 pb-1.5 border-b border-[#e4e2df]">Physical Information</div>
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Height (cm)" type="number" value={form.height} onChange={(e) => set("height", e.target.value)} placeholder="175" />
-            <Input label="Weight (kg)" type="number" value={form.weight} onChange={(e) => set("weight", e.target.value)} placeholder="75" />
-          </div>
-        </div>
-
-        {/* Membership */}
-        <div>
-          <div className="text-xs font-semibold text-[#111110] mb-3 pb-1.5 border-b border-[#e4e2df]">Membership Plan (optional)</div>
-          <Select
-            label="Plan"
-            value={form.planId}
-            onChange={(e) => set("planId", e.target.value)}
-            options={PLANS.filter((p) => p.status === "active").map((p) => ({ value: p.id, label: `${p.name} — EGP ${p.price}` }))}
-            placeholder="Select a plan (optional)"
-          />
-          <p className="text-[11px] text-[#9b9895] mt-1.5">A subscription record can be created after the member is added.</p>
+        <Input label="Phone" required value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="+20 100 111 2233" />
+        <Input label="Email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="ahmed@example.com" />
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Date of Birth" type="date" value={form.date_of_birth} onChange={e => set("date_of_birth", e.target.value)} />
+          <Select label="Gender" value={form.gender} onChange={e => set("gender", e.target.value)} options={[
+            { value: "", label: "Select..." },
+            { value: "male", label: "Male" },
+            { value: "female", label: "Female" },
+          ]} />
         </div>
       </div>
     </Modal>
