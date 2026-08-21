@@ -69,10 +69,11 @@ class AuthService:
                 }
             )
         except Exception as e:
+            print("🔥 SUPABASE LOGIN ERROR:", repr(e))
             raise HTTPException(
-                status_code=401,
-                detail="Invalid email or password"
-            )
+            status_code=401,
+            detail=str(e)
+    )
 
         if not response.session or not response.user:
             raise HTTPException(
